@@ -1,0 +1,44 @@
+/**
+ * CrÃ©dits Piqo et e-Medias : au survol la mention passe en espagnol (CSS).
+ * Easter egg : plus on insiste, plus le chef a des choses Ã  dire, en franco-espagnol
+ * approximatif (c'est voulu, comme dans toute la marque).
+ */
+const LINES = {
+	emedias: [
+		null,
+		'Alors, tu aimes ce chef-dâ€™Å“uvre ? Â¿SÃ­ o sÃ­, amigo?',
+		null,
+		'Dato curioso : 47 pinchos ont Ã©tÃ© sacrificados pendant la crÃ©ation de ce chef-dâ€™Å“uvre.',
+		null,
+		'Â¿Encore toi ? Ce chef-dâ€™Å“uvre ne se mange pasâ€¦ pero se clica.',
+		'Una obra maestra, je sais. Bon, tu peux cliquer maintenant, por favor.',
+	],
+	piqo: [
+		null,
+		'Chaque pincho a Ã©tÃ© dessinÃ© Ã  la main. SÃ­, seÃ±or, Ã  la main.',
+		null,
+		'51 pictogrammes dessinÃ©s. Nosotros ? On a juste goÃ»tÃ©.',
+		null,
+		'Â« Le Piqo Â» est aussi un pincho de la carte. Â¿Coincidencia? No creo.',
+		'Â¡Arte puro! Bon, clique, ils le mÃ©ritent.',
+	],
+};
+
+export function initCredit() {
+	document.querySelectorAll('[data-credit]').forEach((link) => {
+		const bubble = link.querySelector('[data-credit-bubble]');
+		const lines = LINES[link.dataset.credit] || [];
+		if (!bubble || !lines.length) return;
+		let count = 0;
+		let timer = 0;
+		link.addEventListener('pointerenter', () => {
+			const line = lines[count % lines.length];
+			count++;
+			if (!line) return;
+			bubble.textContent = line;
+			bubble.classList.add('is-on');
+			clearTimeout(timer);
+			timer = setTimeout(() => bubble.classList.remove('is-on'), 3800);
+		});
+	});
+}
