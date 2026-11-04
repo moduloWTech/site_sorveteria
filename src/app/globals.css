@@ -31,13 +31,19 @@
   padding: 0;
 }
 
-html, body {
+html {
   background-color: var(--color-bg-deep);
   color: var(--color-text-body);
   font-family: var(--font-sans);
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg-deep);
+  color: var(--color-text-body);
+  font-family: var(--font-sans);
+  overflow-x: clip;
 }
 
 /* Base Link & Button resets */
@@ -179,7 +185,9 @@ button {
 .dolcevia-hero-section {
   position: relative;
   width: 100%;
+  height: 100vh;
   min-height: 100vh;
+  max-height: 100vh;
   background-color: var(--color-bg-deep);
   display: flex;
   flex-direction: column;
@@ -201,16 +209,43 @@ button {
   z-index: 1;
 }
 
+/* Scroll-Driven WebP Frame Sequence Stage (240 frames) */
+.hero-frames-stage {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 78vw;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.hero-frames-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.hero-frames-canvas.is-loaded {
+  opacity: 1;
+}
+
 /* Main Two-Column Grid */
 .hero-grid {
   position: relative;
   z-index: 10;
   width: 100%;
+  height: 100%;
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(460px, 44%) 1fr;
-  padding: 6.5rem 4vw 2.5rem 4vw;
-  min-height: calc(100vh - 4rem);
+  grid-template-columns: minmax(440px, 44%) 1fr;
+  padding: clamp(4.75rem, 8vh, 6.25rem) 4vw clamp(1.25rem, 3vh, 2.25rem) 4vw;
+  min-height: 0;
 }
 
 /* ==========================================================================
@@ -225,7 +260,7 @@ button {
 }
 
 .editorial-header-block {
-  margin-top: 2rem;
+  margin-top: clamp(0.5rem, 2.2vh, 2rem);
 }
 
 .hero-kicker {
@@ -234,18 +269,18 @@ button {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-gold-kicker);
-  margin-bottom: 0.85rem;
+  margin-bottom: clamp(0.45rem, 1vh, 0.85rem);
   display: inline-block;
 }
 
 .hero-title-serif {
   font-family: var(--font-serif);
-  font-size: clamp(2.9rem, 4.6vw, 5.0rem);
+  font-size: clamp(2.5rem, min(4.4vw, 6.8vh), 4.8rem);
   font-weight: 400;
   line-height: 1.05;
   color: var(--color-text-title);
   letter-spacing: -0.02em;
-  margin-bottom: 1.4rem;
+  margin-bottom: clamp(0.75rem, 1.8vh, 1.4rem);
 }
 
 .hero-title-serif em {
@@ -254,11 +289,11 @@ button {
 }
 
 .hero-subtitle-text {
-  font-size: 1.05rem;
-  line-height: 1.62;
+  font-size: clamp(0.95rem, 1.45vh, 1.05rem);
+  line-height: 1.58;
   color: var(--color-text-body);
   max-width: 440px;
-  margin-bottom: 2.2rem;
+  margin-bottom: clamp(1.1rem, 2.5vh, 2.2rem);
 }
 
 /* CTA Row */
@@ -266,7 +301,7 @@ button {
   display: flex;
   align-items: center;
   gap: 1.4rem;
-  margin-bottom: 2.8rem;
+  margin-bottom: clamp(1.2rem, 2.8vh, 2.8rem);
 }
 
 .btn-primary-peach {
@@ -335,7 +370,7 @@ button {
 /* Highlights Section ("NOSSOS DESTAQUES") */
 .hero-highlights-block {
   margin-top: auto;
-  padding-bottom: 1.5rem;
+  padding-bottom: clamp(0.6rem, 1.5vh, 1.5rem);
 }
 
 .highlights-label {
@@ -352,6 +387,10 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.85rem;
+}
+
+.highlights-mobile-only {
+  display: none;
 }
 
 .flavor-card {
@@ -486,7 +525,7 @@ button {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 640px;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -522,6 +561,366 @@ button {
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   PROMO BANNER MODAL (POPUP ON SITE LOAD)
+   ========================================================================== */
+.promo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(6, 2, 1, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: promoOverlayFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.promo-modal-overlay.is-closing {
+  animation: promoOverlayFadeOut 0.3s ease forwards;
+}
+
+@keyframes promoOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes promoOverlayFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.dolcevia-promo-banner.promo-modal-card {
+  position: relative;
+  width: min(1180px, 94vw);
+  min-height: 270px;
+  height: 280px;
+  background: linear-gradient(90deg, #1E0D08 0%, #3A1B11 45%, #482316 52%, #2B130B 82%, #1A0A06 100%);
+  border: 1px solid rgba(252, 215, 176, 0.18);
+  border-radius: 22px;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: promoCardPopIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dolcevia-promo-banner.promo-modal-card.is-closing {
+  animation: promoCardPopOut 0.3s ease forwards;
+}
+
+@keyframes promoCardPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes promoCardPopOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+.promo-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 30;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(15, 6, 3, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #FAF9F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
+}
+
+.promo-close-btn:hover {
+  background: rgba(246, 117, 158, 0.85);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
+}
+
+.promo-banner-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 42% 85% at 50% 58%, rgba(164, 91, 52, 0.36) 0%, transparent 72%),
+    radial-gradient(ellipse 30% 70% at 18% 50%, rgba(12, 4, 2, 0.65) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.promo-banner-inner {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 1440px;
+  height: 100%;
+  padding: 0 4vw;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1.1fr;
+  align-items: center;
+}
+
+/* 1. Left Column: Tilted Offer + CTA */
+.promo-left-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  padding-left: 0.5rem;
+}
+
+.promo-headline-tilt {
+  transform: rotate(-5.5deg);
+  transform-origin: left center;
+}
+
+.promo-script-kicker {
+  display: block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  color: #F4729B;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.1rem;
+  text-shadow: 0 2px 12px rgba(244, 114, 155, 0.25);
+}
+
+.promo-main-heading {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+}
+
+.promo-line-white {
+  font-size: clamp(1.7rem, 2.55vw, 2.5rem);
+  color: #FFFFFF;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.promo-line-mixed {
+  font-size: clamp(2.1rem, 3.25vw, 3.25rem);
+  color: #FFFFFF;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  margin-top: 0.08rem;
+}
+
+.promo-highlight-pink {
+  font-style: normal;
+  color: #F6759E;
+  text-shadow: 0 4px 18px rgba(246, 117, 158, 0.35);
+}
+
+.promo-cta-wrapper {
+  margin-top: 0.85rem;
+  align-self: flex-end;
+  margin-right: clamp(1rem, 3vw, 3.5rem);
+}
+
+.promo-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: linear-gradient(135deg, #F86594 0%, #E64376 100%);
+  color: #FFFFFF;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.72rem 1.6rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(238, 75, 126, 0.38);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.promo-order-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(238, 75, 126, 0.55);
+}
+
+.promo-order-arrow {
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.promo-order-btn:hover .promo-order-arrow {
+  transform: translateX(4px);
+}
+
+/* 2. Center Column: Gelato Sundae / Scoops Centerpiece */
+.promo-center-col {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.promo-gelato-glow {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  bottom: -40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(252, 215, 176, 0.22) 0%, transparent 70%);
+  filter: blur(16px);
+}
+
+.promo-gelato-crop {
+  position: relative;
+  width: 300px;
+  height: 275px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+.promo-gelato-img {
+  width: 285px;
+  height: auto;
+  object-fit: cover;
+  object-position: top center;
+  transform: translateY(4px);
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+}
+
+.promo-floating-prop {
+  position: absolute;
+  z-index: 4;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+  animation: promoFloat 4.5s ease-in-out infinite alternate;
+}
+
+.prop-strawberry {
+  top: 22px;
+  left: 12%;
+  animation-delay: 0s;
+}
+
+.prop-chocolate {
+  top: 38px;
+  right: 10%;
+  animation-delay: 0.8s;
+}
+
+.prop-hazelnut {
+  bottom: 42px;
+  left: 6%;
+  animation-delay: 1.4s;
+}
+
+.prop-caramel {
+  bottom: 56px;
+  right: 8%;
+  animation-delay: 2.1s;
+}
+
+@keyframes promoFloat {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-8px) rotate(6deg); }
+}
+
+/* 3. Right Column: Handwritten Quote + Pink Splash Badge */
+.promo-right-col {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 1rem;
+}
+
+.promo-handwritten-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: rotate(-6deg);
+  z-index: 4;
+}
+
+.promo-handwritten-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+  line-height: 1.18;
+  color: #F5EDE6;
+  text-align: center;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.promo-handwritten-heart {
+  margin-top: 0.45rem;
+  opacity: 0.92;
+  transform: rotate(8deg);
+}
+
+.promo-splash-wrapper {
+  position: relative;
+  width: 215px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.promo-drips-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35));
+}
+
+.promo-splash-text {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(19px, 2px) rotate(-7deg);
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: 1.05rem;
+  line-height: 1.08;
+  letter-spacing: 0.02em;
+  color: #1F0B07;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 /* Footer */
@@ -563,7 +962,9 @@ button {
   }
 
   .dolcevia-hero-section {
+    height: auto;
     min-height: auto;
+    max-height: none;
     overflow-x: hidden;
     padding-bottom: 2rem;
   }
@@ -591,6 +992,14 @@ button {
     background-position: center bottom;
     background-size: cover;
     opacity: 1;
+  }
+
+  .hero-frames-stage {
+    right: 0;
+    left: 0;
+    top: 3.5rem;
+    width: 100%;
+    height: 330px;
   }
 
   .hero-pagination-vertical {
@@ -650,7 +1059,7 @@ button {
     padding: 0.35rem 0;
   }
 
-  /* 4. Highlights: Touch-friendly horizontal swipeable carousel */
+  /* 4. Highlights: Infinite + Draggable Carousel on Mobile */
   .hero-highlights-block {
     margin-top: 0;
     padding-bottom: 0.5rem;
@@ -662,57 +1071,150 @@ button {
     margin-bottom: 0.75rem;
   }
 
-  .highlights-grid {
-    display: flex;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    gap: 0.85rem;
+  .highlights-desktop-only {
+    display: none;
+  }
+
+  .highlights-mobile-only {
+    display: block;
+  }
+
+  .highlights-carousel-viewport {
+    position: relative;
+    overflow: hidden;
     margin: 0 -1.25rem;
-    padding: 0.25rem 1.25rem 0.85rem 1.25rem;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    padding: 0.35rem 0 0.85rem 0;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      #000000 7%,
+      #000000 93%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      #000000 7%,
+      #000000 93%,
+      transparent 100%
+    );
   }
 
-  .highlights-grid::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+  .highlights-carousel-track {
+    display: flex;
+    align-items: stretch;
+    gap: 0.85rem;
+    width: max-content;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform;
   }
 
-  .flavor-card {
-    width: 136px;
-    min-width: 136px;
+  .highlights-carousel-track.is-dragging {
+    cursor: grabbing;
+  }
+
+  .flavor-card-mobile {
+    width: 138px;
+    min-width: 138px;
     flex-shrink: 0;
-    scroll-snap-align: start;
-    touch-action: pan-x;
     padding: 0.75rem 0.65rem;
-    background: rgba(14, 38, 58, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 15, 10, 0.68);
+    border: 1px solid rgba(252, 215, 176, 0.14);
     border-radius: 14px;
     user-select: none;
     -webkit-user-select: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
   }
 
-  .flavor-card:active {
-    transform: scale(0.97);
+  .highlights-carousel-track.is-dragging .flavor-card-mobile {
+    border-color: rgba(252, 215, 176, 0.28);
   }
 
   .flavor-thumb-wrapper {
     width: 66px;
     height: 66px;
     margin-bottom: 0.45rem;
+    pointer-events: none;
   }
 
   .flavor-name {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #E8F2FA;
+    color: #FAF9F6;
     line-height: 1.2;
   }
 
   .hero-bottom-bar {
     display: none;
+  }
+
+  /* Promo Banner Modal Mobile Adaptation */
+  .dolcevia-promo-banner.promo-modal-card {
+    width: 94vw;
+    height: auto;
+    min-height: auto;
+    padding: 2.25rem 0 0 0;
+  }
+
+  .promo-banner-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0 1.25rem;
+  }
+
+  .promo-left-col {
+    align-items: center;
+    text-align: center;
+    padding-left: 0;
+    width: 100%;
+  }
+
+  .promo-headline-tilt {
+    transform: rotate(-3deg);
+    transform-origin: center center;
+  }
+
+  .promo-cta-wrapper {
+    align-self: center;
+    margin-right: 0;
+    margin-top: 1rem;
+  }
+
+  .promo-center-col {
+    order: 3;
+    width: 100%;
+    height: 220px;
+  }
+
+  .promo-gelato-crop {
+    width: 240px;
+    height: 220px;
+  }
+
+  .promo-gelato-img {
+    width: 225px;
+  }
+
+  .promo-right-col {
+    order: 2;
+    width: 100%;
+    justify-content: space-around;
+    padding-left: 0;
+    height: 170px;
+  }
+
+  .promo-splash-wrapper {
+    width: 175px;
+    height: 170px;
+  }
+
+  .promo-splash-text {
+    font-size: 0.88rem;
+    transform: translate(15px, 2px) rotate(-7deg);
   }
 
   .dolcevia-footer {

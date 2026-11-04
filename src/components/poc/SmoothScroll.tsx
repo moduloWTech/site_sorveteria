@@ -15,26 +15,24 @@ if (typeof window !== 'undefined') {
 
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Acessibilidade: respeita preferência por movimento reduzido desativando inércia artificial
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
 
     const lenis = new Lenis({
-      lerp: 0.09,
-      wheelMultiplier: 0.95,
+      lerp: 0.12,
+      wheelMultiplier: 1.0,
       touchMultiplier: 1.2,
     });
 
-    // Sincroniza a posição calculada do scroll virtual com o ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
-    // Conecta o loop do Lenis no relógio unificado do GSAP Ticker
     const tickerCallback = (time: number) => {
       lenis.raf(time * 1000);
     };
 
     gsap.ticker.add(tickerCallback);
     gsap.ticker.lagSmoothing(0);
+    ScrollTrigger.refresh();
 
     return () => {
       gsap.ticker.remove(tickerCallback);
