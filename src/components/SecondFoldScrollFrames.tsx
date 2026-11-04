@@ -64,17 +64,19 @@ export function SecondFoldScrollFrames({ triggerRef }: SecondFoldScrollFramesPro
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, cw, ch);
 
-    // Ajusta a escala pelo tamanho da viewport
-    const scale = (ch / ih) * 1.05;
+    // No desktop: mantém a escala da altura (ch/ih * 1.05) com a casquinha ancorada na base
+    // No mobile (cw < 960): usa cover real Math.max(cw/iw, ch/ih) centralizado, garantindo tela 100% cheia sem corte da caixa
+    const isMobile = cw < 960;
+    const scale = isMobile ? Math.max(cw / iw, ch / ih) : (ch / ih) * 1.05;
     const drawWidth = iw * scale;
     const drawHeight = ih * scale;
-    const offsetX = (cw - drawWidth) * 0.55;
-    const offsetY = -Math.round(drawHeight - ch);
+    const offsetX = (cw - drawWidth) * (isMobile ? 0.5 : 0.55);
+    const offsetY = isMobile ? (ch - drawHeight) * 0.45 : -Math.round(drawHeight - ch);
 
     ctx.drawImage(source, offsetX, offsetY, drawWidth, drawHeight);
 
-    // Suaviza a borda esquerda para integrar com o fundo
-    if (leftFadeGradRef.current) {
+    // Suaviza a borda esquerda para integrar com o fundo (apenas no desktop)
+    if (!isMobile && leftFadeGradRef.current) {
       ctx.globalCompositeOperation = 'destination-in';
       ctx.fillStyle = leftFadeGradRef.current;
       ctx.fillRect(0, 0, cw, ch);
@@ -235,4 +237,3 @@ export function SecondFoldScrollFrames({ triggerRef }: SecondFoldScrollFramesPro
     </div>
   );
 }
-
