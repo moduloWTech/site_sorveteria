@@ -1,20 +1,122 @@
 'use client';
 
 import { useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { SmoothScroll } from '@/components/poc/SmoothScroll';
 import { HeroScrollFrames } from '@/components/HeroScrollFrames';
+import { SecondFoldScrollFrames } from '@/components/SecondFoldScrollFrames';
 import { FlavorHighlights } from '@/components/FlavorHighlights';
+import { FlavorShowcase } from '@/components/FlavorShowcase';
 import { PromoBanner } from '@/components/PromoBanner';
 
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 export default function DolceviaHome() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const heroSectionRef = useRef<HTMLElement>(null);
+  const secondFoldRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const container = containerRef.current;
+      const hero = heroSectionRef.current;
+      const secondFold = secondFoldRef.current;
+
+      if (!container || !hero || !secondFold) return;
+
+      // Timeline mestre pinando o container:
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: 'top top',
+          end: '+=420%',
+          pin: true,
+          scrub: true,
+          anticipatePin: 1,
+        },
+      });
+
+      // 1. Duração do primeiro vídeo (0 a 1.2s)
+      tl.to({}, { duration: 1.25 })
+        // 2. Transição da segunda dobra deslizando da direita (1.25s a 2.25s)
+        .fromTo(
+          secondFold,
+          { x: '100%' },
+          { x: '0%', ease: 'power2.inOut', duration: 1.0 }
+        );
+
+      // 3. EFEITO QUEBRA-CABEÇA:
+      // À medida que o segundo vídeo rueda (2.25s a 4.25s), cada peça do cardápio
+      // surge de diferentes ângulos/distâncias e se encaixa no lugar perfeito
+      // concluindo exatamente no último frame do vídeo.
+      const puzzleStartTime = 2.25;
+
+      // Peça 1: Cabeçalho (entra descendo e alinhando)
+      tl.fromTo(
+        '.puzzle-header',
+        { y: -36, opacity: 0, filter: 'blur(8px)' },
+        { y: 0, opacity: 1, filter: 'blur(0px)', ease: 'power1.out', duration: 0.65 },
+        puzzleStartTime
+      );
+
+      // Peça 2: Itens do menu entram em cascata com leve rotação como blocos encaixando
+      tl.fromTo(
+        '.puzzle-item-0',
+        { x: -50, y: -10, rotation: -3, opacity: 0, scale: 0.94 },
+        { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1, ease: 'power2.out', duration: 0.55 },
+        puzzleStartTime + 0.25
+      );
+
+      tl.fromTo(
+        '.puzzle-item-1',
+        { x: -50, y: -5, rotation: 2, opacity: 0, scale: 0.94 },
+        { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1, ease: 'power2.out', duration: 0.55 },
+        puzzleStartTime + 0.45
+      );
+
+      tl.fromTo(
+        '.puzzle-item-2',
+        { x: -50, y: 5, rotation: -2, opacity: 0, scale: 0.94 },
+        { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1, ease: 'power2.out', duration: 0.55 },
+        puzzleStartTime + 0.65
+      );
+
+      tl.fromTo(
+        '.puzzle-item-3',
+        { x: -50, y: 10, rotation: 3, opacity: 0, scale: 0.94 },
+        { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1, ease: 'power2.out', duration: 0.55 },
+        puzzleStartTime + 0.85
+      );
+
+      // Peça 3: Card de detalhes sensorial do sabor (sobe com efeito de encaixe 3D)
+      tl.fromTo(
+        '.puzzle-card',
+        { y: 45, x: 20, rotation: 2, opacity: 0, scale: 0.92, filter: 'blur(6px)' },
+        { y: 0, x: 0, rotation: 0, opacity: 1, scale: 1, filter: 'blur(0px)', ease: 'power2.out', duration: 0.75 },
+        puzzleStartTime + 1.05
+      );
+
+      // Peça 4: CTA e nota de rodapé (trava o quebra-cabeça exatamente no último frame)
+      tl.fromTo(
+        '.puzzle-cta',
+        { y: 25, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, ease: 'power1.out', duration: 0.5 },
+        puzzleStartTime + 1.45
+      );
+    },
+    { scope: containerRef }
+  );
 
   return (
     <SmoothScroll>
-      <div className="dolcevia-wrapper">
-        {/* 1. Hero Protagonista na Primeira Dobra (Pinned Scroll + Sequência WebP 240 Frames) */}
+      <div ref={containerRef} className="dolcevia-experience-container">
+        {/* 1. Primeira Dobra: Hero com vídeo 1 controlado por scroll */}
         <section ref={heroSectionRef} id="hero" className="dolcevia-hero-section">
-          {/* Header / Navbar Superior integrado na primeira dobra */}
+          {/* Header / Navbar Superior */}
           <header className="dolcevia-navbar">
             <a href="#hero" className="brand-wrapper" aria-label="Dolcevia Gelato Artesanal">
               <div className="brand-crest">
@@ -71,16 +173,13 @@ export default function DolceviaHome() {
           {/* Camada de Fundo Base */}
           <div className="hero-stage-backdrop" aria-hidden="true" />
 
-          {/* Sequência de 240 Frames WebP controlada pelo Scroll */}
-          <HeroScrollFrames triggerRef={heroSectionRef} />
+          {/* Sequência de 240 Frames WebP sincronizada com o ScrollTrigger mestre */}
+          <HeroScrollFrames triggerRef={containerRef} />
 
           <div className="hero-grid">
-            {/* Coluna Editorial (Esquerda - Destaques e Indicador de Scroll) */}
             <div className="hero-editorial-col">
-              {/* Destaques de Sabores (Grid no Desktop / Carrossel Infinito Arrastável no Mobile) */}
               <FlavorHighlights />
 
-              {/* Barra Inferior / Indicador de Scroll */}
               <div className="hero-bottom-bar">
                 <div className="scroll-pill-icon" aria-hidden="true">
                   <div className="scroll-dot" />
@@ -89,9 +188,7 @@ export default function DolceviaHome() {
               </div>
             </div>
 
-            {/* Coluna Visual Hero (Direita - 56% no desktop) */}
             <div className="hero-visual-col">
-              {/* Paginação Lateral Direita */}
               <div className="hero-pagination-vertical" aria-hidden="true">
                 <span className="pagination-num-active">01</span>
                 <div className="pagination-track-line" />
@@ -101,7 +198,34 @@ export default function DolceviaHome() {
           </div>
         </section>
 
-        {/* Modal Promocional que abre no carregamento */}
+        {/* 2. Segunda Dobra: Desliza da direita e monta o cardápio como quebra-cabeça sincronizado com o vídeo */}
+        <section ref={secondFoldRef} id="segunda-dobra" className="dolcevia-second-fold">
+          {/* Mesmo fundo da primeira dobra */}
+          <div className="hero-stage-backdrop" aria-hidden="true" />
+
+          {/* Sequência de 72 Frames WebP do 2º vídeo controlada pelo scroll */}
+          <SecondFoldScrollFrames triggerRef={containerRef} />
+
+          <div className="second-fold-content">
+            <div className="second-fold-grid">
+              {/* Coluna Esquerda: Showcase Interativo dos Sabores montando como quebra-cabeça */}
+              <div className="second-fold-left-col">
+                <FlavorShowcase />
+              </div>
+
+              {/* Coluna Direita: Espaço reservado para o protagonismo do vídeo 72 frames */}
+              <div className="second-fold-right-col" aria-hidden="true">
+                <div className="hero-pagination-vertical">
+                  <span className="pagination-num-active">02</span>
+                  <div className="pagination-track-line" />
+                  <span className="pagination-num-total">04</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Modal Promocional inicial */}
         <PromoBanner />
       </div>
     </SmoothScroll>

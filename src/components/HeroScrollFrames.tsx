@@ -66,43 +66,16 @@ export function HeroScrollFrames({ triggerRef }: HeroScrollFramesProps) {
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, cw, ch);
 
-    // Progresso 0..1 para compensar a descida da câmera no final do vídeo original
-    const progress = clampedIndex / (TOTAL_FRAMES - 1);
-
-    // Subimos o vídeo (~5.5% na base + até 3% extras no final do vídeo) para a ponta da casquinha nunca encostar na borda inferior
-    const scale = ch / ih;
+    // Ajustamos a escala (cover limpo pelo topo/centro) para manter proporção elegante
+    const scale = (ch / ih) * 1.06;
     const drawWidth = iw * scale;
-    const drawHeight = ch;
+    const drawHeight = ih * scale;
     const offsetX = (cw - drawWidth) * 0.55;
-    const liftRatio = 0.055 + progress * 0.03;
-    const offsetY = -Math.round(ch * liftRatio);
+    const offsetY = -Math.round(drawHeight - ch); // Encosta a base real do vídeo no fundo da tela
 
-    // 1. Preenche a faixa inferior resultante da subida usando a própria calda de chocolate do frame 1 (sem costura)
-    const baseSource = framesRef.current[0] || source;
-    const bottomGapY = offsetY + drawHeight;
-    const bottomGapH = ch - bottomGapY;
-
-    if (bottomGapH > 0) {
-      // Usa a faixa de calda de chocolate da base do frame 1 (y: 690..720) estendida suavemente até o rodapé da dobra
-      const srcStripY = Math.floor(ih * 0.958);
-      const srcStripH = ih - srcStripY;
-      ctx.drawImage(
-        baseSource,
-        0,
-        srcStripY,
-        iw,
-        srcStripH,
-        offsetX,
-        bottomGapY - 2,
-        drawWidth,
-        bottomGapH + 4
-      );
-    }
-
-    // 2. Desenha o frame atual deslocado para cima
     ctx.drawImage(source, offsetX, offsetY, drawWidth, drawHeight);
 
-    // 3. Suaviza apenas a borda esquerda para fundir com a coluna de texto, preservando 100% do brilho do sorvete
+    // Suaviza apenas a borda esquerda para fundir com a coluna de texto, preservando 100% do brilho do sorvete
     if (leftFadeGradRef.current) {
       ctx.globalCompositeOperation = 'destination-in';
       ctx.fillStyle = leftFadeGradRef.current;
@@ -227,7 +200,9 @@ export function HeroScrollFrames({ triggerRef }: HeroScrollFramesProps) {
     };
   }, []);
 
-  // Sincronização direta 1:1 com o scroll
+  // Sincronização com o scroll:
+  // Os frames avançam suavemente até o final ao longo de 70% do scroll total.
+  // A transição da segunda dobra começa antes (em 52%), cobrindo a fase final enquanto os frames concluem
   useGSAP(
     () => {
       const triggerEl = triggerRef.current;
@@ -236,15 +211,15 @@ export function HeroScrollFrames({ triggerRef }: HeroScrollFramesProps) {
       ScrollTrigger.create({
         trigger: triggerEl,
         start: 'top top',
-        end: '+=180%',
-        pin: true,
+        end: '+=320%',
         scrub: true,
-        anticipatePin: 1,
         fastScrollEnd: true,
         onUpdate: (self) => {
+          // Distribui a reprodução do vídeo até 70% do scroll
+          const videoProgress = Math.min(1, self.progress / 0.7);
           const nextFrame = Math.min(
             TOTAL_FRAMES - 1,
-            Math.max(0, Math.round(self.progress * (TOTAL_FRAMES - 1)))
+            Math.max(0, Math.round(videoProgress * (TOTAL_FRAMES - 1)))
           );
           if (nextFrame !== currentFrameRef.current) {
             currentFrameRef.current = nextFrame;

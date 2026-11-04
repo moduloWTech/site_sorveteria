@@ -180,18 +180,282 @@ button {
 }
 
 /* ==========================================================================
-   DOLCEVIA HERO SECTION
+   DOLCEVIA EXPERIENCE PINNED CONTAINER & TWO FOLDS
    ========================================================================== */
-.dolcevia-hero-section {
+.dolcevia-experience-container {
   position: relative;
   width: 100%;
   height: 100vh;
-  min-height: 100vh;
-  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* 1. Primeira Dobra */
+.dolcevia-hero-section {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
   background-color: var(--color-bg-deep);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: 10;
+}
+
+/* 2. Segunda Dobra: Desliza da direita para a esquerda sobre a primeira dobra */
+.dolcevia-second-fold {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 30;
+  overflow: hidden;
+  transform: translate3d(100%, 0, 0);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.75);
+  background-color: var(--color-bg-deep);
+}
+
+.second-fold-content {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+}
+
+.second-fold-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(460px, 48%) 1fr;
+  padding: clamp(3.5rem, 6vh, 4.5rem) 4vw 2.5rem 4vw;
+}
+
+.second-fold-left-col {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 580px;
+}
+
+.second-fold-right-col {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   FLAVOR SHOWCASE (SEGUNDA DOBRA) & PUZZLE ASSEMBLY EFFECT
+   ========================================================================== */
+.flavor-showcase-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.2vh, 1.6rem);
+  perspective: 1000px;
+}
+
+.puzzle-piece {
+  will-change: transform, opacity, filter;
+  transform-style: preserve-3d;
+}
+
+.flavor-showcase-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.flavor-kicker {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gold-kicker);
+  margin-bottom: 0.45rem;
+}
+
+.flavor-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+  font-weight: 400;
+  color: var(--color-text-title);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: 0.65rem;
+}
+
+.flavor-subtitle {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--color-text-body);
+  max-width: 480px;
+}
+
+/* Lista Seletora Interativa */
+.flavor-selector-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.flavor-selector-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  background: rgba(26, 11, 7, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  cursor: pointer;
+}
+
+.flavor-selector-item:hover,
+.flavor-selector-item.is-active {
+  background: rgba(45, 22, 14, 0.75);
+  border-color: rgba(252, 215, 176, 0.35);
+  transform: translateX(6px);
+}
+
+.flavor-selector-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.flavor-item-index {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-gold-kicker);
+  letter-spacing: 0.05em;
+}
+
+.flavor-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.flavor-item-name {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--color-text-title);
+  letter-spacing: 0.01em;
+  transition: color 0.2s ease;
+}
+
+.flavor-selector-item.is-active .flavor-item-name {
+  color: var(--color-peach);
+}
+
+.flavor-item-origin {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+.flavor-item-arrow {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.flavor-selector-item:hover .flavor-item-arrow,
+.flavor-selector-item.is-active .flavor-item-arrow {
+  color: var(--color-peach);
+  transform: translateX(4px);
+}
+
+/* Card de Detalhes Glassmorphism */
+.flavor-detail-card {
+  background: rgba(26, 11, 7, 0.65);
+  border: 1px solid rgba(252, 215, 176, 0.15);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+.flavor-detail-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.flavor-detail-thumb {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flavor-detail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+
+.flavor-detail-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.flavor-detail-category {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold-kicker);
+  margin-bottom: 0.25rem;
+}
+
+.flavor-detail-desc {
+  font-size: 0.88rem;
+  line-height: 1.48;
+  color: var(--color-text-body);
+  margin-bottom: 0.65rem;
+}
+
+.flavor-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.flavor-tag-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-peach);
+  background: rgba(252, 215, 176, 0.1);
+  border: 1px solid rgba(252, 215, 176, 0.22);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+/* CTA Footer da Dobra */
+.flavor-showcase-cta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+.flavor-cta-note {
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+  max-width: 260px;
+  line-height: 1.35;
 }
 
 /* Background Warm Stage Layer */
